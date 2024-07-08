@@ -1,11 +1,17 @@
 import { useContext, useState, useEffect, ButtonHTMLAttributes } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { midiNotes } from "../../Constants/midiNotes";
 import {
   SelectedNoteContextType,
   SelectedNoteContext,
 } from "../../Context/SelectedNoteContext";
+import { useDrop } from "react-dnd";
+import Note from "./Note";
+import { DragLayer } from "./DragLayer";
+import { ItemTypes } from "./ItemTypes";
 
 type MidiNoteType = {
+  id: string;
   note: string;
   row: number;
   col: number;
@@ -44,6 +50,7 @@ function MidiGrid() {
       setSelectedNote({ name: note, row, col });
 
       let addMidi = {
+        id: uuidv4(),
         note,
         row,
         col,
@@ -68,7 +75,7 @@ function MidiGrid() {
     col: number | null
   ) => {
     if (e.buttons === 1) {
-      setSelectedNote({ name: note, row, col });
+      // setSelectedNote({ name: note, row, col });
     } else if (e.buttons === 2) {
       let updateMidi = midi.filter(
         (midi) => !(midi.note === note && midi.col === col)
@@ -76,6 +83,48 @@ function MidiGrid() {
       setMidi(updateMidi);
     }
   };
+
+  const updateNotePosition = (
+    id: string,
+    note: string,
+    row: number,
+    col: number
+  ) => {
+    setMidi((prevItems) => {
+      return prevItems.map((item) => {
+        if (item.id === id) {
+          // Create a new object with the updated data
+          return {
+            ...item,
+            note: midiNotes[item.row + row],
+            row: item.row + row,
+            col: item.col + col,
+          };
+        }
+        // Return the original object if no match is found
+        return item;
+      });
+    });
+  };
+
+  const [, drop] = useDrop(
+    () => ({
+      accept: ItemTypes.BOX,
+      drop(item: MidiNoteType, monitor) {
+        const delta = monitor.getDifferenceFromInitialOffset() as {
+          x: number;
+          y: number;
+        };
+
+        const colChange = Math.round(delta.x / 28.92);
+        const rowChange = Math.round(delta.y / 18.08);
+
+        updateNotePosition(item.id, item.note, rowChange, colChange);
+        return undefined;
+      },
+    }),
+    [updateNotePosition]
+  );
 
   // Generates grid rows and columns for each MIDI note, creating buttons for each grid cell.
   const gridItems = midiNotes.flatMap((note, rowIndex) =>
@@ -100,25 +149,21 @@ function MidiGrid() {
         gridTemplateRows: `repeat(72, 1fr)`,
         gridTemplateColumns: `repeat(${cols}, 1fr)`,
       }}
+      ref={drop}
     >
       {gridItems}
+      <DragLayer />
       {midi.map((midi, index) => (
-        <div
-          key={index}
-          className="absolute top-0 left-0 w-full bg-white text-sm cursor-pointer"
-          style={{
-            gridRow: midi.row + 1, // Adding 1 because gridRow is 1-based
-            gridColumn: `${midi.col + 1} / span ${midi.length}`, // Adding 1 because gridColumn is 1-based
-            zIndex: 1000,
-            height: "18.09px",
-          }}
-          onMouseMove={(e) =>
-            handleOnMouseMove(e, midi.note, midi.row, midi.col)
-          }
-          onContextMenu={(e) => handleOnClick(e, midi.note, midi.row, midi.col)}
-        >
-          {midi.note}
-        </div>
+        <Note
+          key={midi.id}
+          id={midi.id}
+          note={midi.note}
+          row={midi.row}
+          col={midi.col}
+          length={midi.length}
+          handleOnClick={handleOnClick}
+          handleOnMouseMove={handleOnMouseMove}
+        />
       ))}
     </div>
   );

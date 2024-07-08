@@ -1,6 +1,8 @@
 import { useEffect, useRef, useContext } from "react";
 import Keyboard from "../Keyboard/Keyboard";
 import MidiGrid from "../Midi/MidiGrid";
+import { useDrag, useDrop, DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 function Main() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -20,7 +22,9 @@ function Main() {
       ref={scrollRef}
     >
       <Keyboard />
-      <MidiGrid />
+      <DndProvider backend={HTML5Backend}>
+        <MidiGrid />
+      </DndProvider>
     </div>
   );
 }
