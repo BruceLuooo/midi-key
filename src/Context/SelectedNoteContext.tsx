@@ -6,9 +6,15 @@ type SelectedNote = {
   col: number | null;
 };
 
+type cols = {
+  col: number;
+};
+
 export type SelectedNoteContextType = {
   selectedNote: SelectedNote;
   setSelectedNote: React.Dispatch<React.SetStateAction<SelectedNote>>;
+  cols: number;
+  setCols: React.Dispatch<React.SetStateAction<number>>;
 };
 
 type Props = {
@@ -21,7 +27,9 @@ const initialSelectedNoteContext: SelectedNoteContextType = {
     row: null,
     col: null,
   },
-  setSelectedNote: () => {}, // Placeholder function
+  setSelectedNote: () => {}, // Placeholder function,
+  cols: 64,
+  setCols: () => {}, // Placeholder function,
 };
 
 export const SelectedNoteContext = createContext<SelectedNoteContextType>(
@@ -35,10 +43,13 @@ export const SelectedNoteProvider = ({ children }: Props) => {
     col: null,
   });
 
-  const [isMouseDown, setIsMouseDown] = useState(false);
+  // Initial amount of columns displayed.
+  const [cols, setCols] = useState(64);
 
   return (
-    <SelectedNoteContext.Provider value={{ selectedNote, setSelectedNote }}>
+    <SelectedNoteContext.Provider
+      value={{ selectedNote, setSelectedNote, cols, setCols }}
+    >
       {children}
     </SelectedNoteContext.Provider>
   );

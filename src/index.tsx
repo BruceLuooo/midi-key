@@ -5,12 +5,12 @@ import App from "./App";
 import { SelectedNoteProvider } from "./Context/SelectedNoteContext";
 
 const root = ReactDOM.createRoot(
-  document.getElementById("root") as HTMLElement
+    document.getElementById("root") as HTMLElement
 );
 root.render(
-  <React.StrictMode>
-    <SelectedNoteProvider>
-      <App />
-    </SelectedNoteProvider>
-  </React.StrictMode>
+    <React.StrictMode>
+        <SelectedNoteProvider>
+            <App />
+        </SelectedNoteProvider>
+    </React.StrictMode>
 );
